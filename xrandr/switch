@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# List all connected devices in xrandr
+# Scan lines below, stopping at the first "+"
+# If there is a "*" before the "+", then it
+# is the current one
+# Switch to the next one
+
+IFS=$'\n'
+
+intern=LVDS1
+extern=VGA1
+devices=$(xrandr | grep " connected")
+VGAflag=0
+
+for listed in $devices; do
+	deviceName=$(echo $listed | cut -d " " -f 1)
+	if [[ $deviceName == $extern ]]; then
+		# VGA is connected
+		VGAflag=1
+	fi
+done
+
+current=$(xrandr | grep -E " connected (primary )?[1-9]+" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
+echo "CURRENT DISPLAY: $current"
+if [[ $VGAflag == 1 ]]; then
+	echo "VGA FLAG: 1"
+	if [[ $current == $intern ]]; then
+		echo "CURRENT DISPLAY IS LVDS1"
+		echo "SWITCHING TO VGA1"
+		xrandr --output "$intern" --off --output "$extern" --auto
+	else
+		echo "CURRENT DISPLAY IS VGA1"
+		echo "SWITCHING TO LVDS1"
+		xrandr --output "$extern" --off --output "$intern" --auto
+	fi
+else
+	echo "VGA FLAG: 0"
+	if [[ $current == $extern ]]; then
+		echo "CURRENT DISPLAY IS VGA1"
+		echo "SWITCHING TO LVDS1"
+		xrandr --output "$extern" --off --output "$intern" --auto
+	else
+		echo "CURRENT DISPLAY IS LVDS1 OR NOTHING"
+		echo "SWITCH TO OR MAINTAIN LVDS1"
+		xrandr --output "$intern" --auto
+	fi
+fi
+
