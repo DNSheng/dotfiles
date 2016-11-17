@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# List all connected devices in xrandr
-# Scan lines below, stopping at the first "+"
-# If there is a "*" before the "+", then it
-# is the current one
-# Switch to the next one
+# Add another option that makes it so the same image is
+# displayed on both monitors
+# BUG:
+# 	- Switching back and forth messes with the scale of
+#			dmenu and i3blocks, as they become too large
+#			- Current solution is to reboot or logout and login
 
 IFS=$'\n'
 
@@ -23,27 +24,26 @@ done
 
 current=$(xrandr | grep -E " connected (primary )?[1-9]+" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
 echo "CURRENT DISPLAY: $current"
+
 if [[ $VGAflag == 1 ]]; then
 	echo "VGA FLAG: 1"
 	if [[ $current == $intern ]]; then
 		echo "CURRENT DISPLAY IS LVDS1"
 		echo "SWITCHING TO VGA1"
-		xrandr --output "$intern" --off --output "$extern" --auto
+		xrandr --output "$extern" --auto --output "$intern" --off --panning 1920x1080 --scale 1.406x1.406
+		# Restart i3 to fix the background
+		i3-msg restart
 	else
 		echo "CURRENT DISPLAY IS VGA1"
 		echo "SWITCHING TO LVDS1"
-		xrandr --output "$extern" --off --output "$intern" --auto
+		xrandr --output "$extern" --off --output "$intern" --auto --panning 1366x768 --scale 1x1
+		i3-msg restart
 	fi
 else
 	echo "VGA FLAG: 0"
-	if [[ $current == $extern ]]; then
-		echo "CURRENT DISPLAY IS VGA1"
-		echo "SWITCHING TO LVDS1"
-		xrandr --output "$extern" --off --output "$intern" --auto
-	else
-		echo "CURRENT DISPLAY IS LVDS1 OR NOTHING"
-		echo "SWITCH TO OR MAINTAIN LVDS1"
-		xrandr --output "$intern" --auto
-	fi
+	echo "CURRENT DISPLAY IS LVDS1 OR NOTHING"
+	echo "SWITCH TO OR MAINTAIN LVDS1"
+	echo "TURNING VGA1 OFF"
+	xrandr --output "$extern" --off --output "$intern" --auto --panning 1366x768 --scale 1x1
+	i3-msg restart
 fi
-
