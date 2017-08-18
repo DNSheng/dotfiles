@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# NEW_SWITCH:
+#	- Adds support for HDMI and VGA output (flexibility)
+#
+# TODO: Add another option that makes it so the same image is
+# 	displayed on both monitors
+#
+# BUGS:
+# 	- Switching back and forth messes with the scale of
+#	  dmenu and i3blocks, as they become too large
+#		- Current solution is to reboot or logout and login
+
+IFS=$'\n'
+
+intern=LVDS1
+devices=$(xrandr | grep " connected")
+extern_flag=0
+extern=$intern
+
+for listed in $devices; do
+	deviceName=$(echo $listed | cut -d " " -f 1)
+	if [[ $deviceName == "HDMI1" || $deviceName == "VGA1" ]]; then
+		# External device is connected
+		extern_flag=1
+		extern=$deviceName
+	fi
+done
+
+echo "-------------------------"
+current=$(xrandr | grep -E " connected (primary )?[1-9]+" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
+echo "CURRENT DISPLAY: $current"
+
+if [[ $extern_flag == 1 ]]; then
+	# Program with assumption that extern and intern are accessible
+	echo "External FLAG: 1"
+	if [[ $current == $intern ]]; then
+		echo "CURRENT DISPLAY IS LVDS1"
+		echo "SWITCHING TO EXTERNAL DISPLAY: $extern"
+		xrandr --output "$extern" --auto --output "$intern" --off --panning 1920x1080 --scale 1.406x1.406
+		# Restart i3 to fix the background
+		i3-msg restart
+	else
+		echo "CURRENT DISPLAY IS EXTERNAL: $extern"
+		echo "SWITCHING TO LVDS1"
+		xrandr --output "$extern" --off --output "$intern" --auto --panning 1366x768 --scale 1x1
+		i3-msg restart
+	fi
+else
+	echo "VGA FLAG: 0"
+	echo "HDMI FLAG: 0"
+	echo "CURRENT DISPLAY IS LVDS1 OR NOTHING"
+	echo "SWITCHING TO/MAINTAINING LVDS1"
+	echo "TURNING EXTERNAL OFF"
+	# Turn off VGA and HDMI, hardcoded
+	xrandr --output HDMI1 --off --output VGA1 --off
+	# Turn on LVDS display
+	xrandr --output "$intern" --auto --panning 1366x768 --scale 1x1
+	i3-msg restart
+fi
+echo "-------------------------"

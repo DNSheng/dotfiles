@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Opens nm-applet if not running,
+# Closes nm-applet if running.
+
+process=$(ps -e | grep nm-applet)
+
+if [[ $process != "" ]]; then
+	pkill nm-applet
+else
+	nm-applet
+fi

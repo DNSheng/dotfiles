@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Controls currently enabled sink
+
+sink=$(pacmd list-sinks | grep "* index:" | cut -d " " -f5)
+
+decrease() {
+	pactl set-sink-volume $sink -5%
+}
+
+increase() {
+	pactl set-sink-volume $sink +5%
+}
+
+mute() {
+	pactl set-sink-mute $sink toggle
+}
+
+case $1 in
+	"decrease"	) decrease;;
+	"increase"	) increase;;
+	"mute"		) mute;;
+	*		) exit;;
+esac

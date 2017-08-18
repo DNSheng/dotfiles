@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# This will write the colours of py-wal to gnome-terminal
+# Fixes colour theme loss and delay in colour change upon new terminal window
+# Get profile ID from:
+#	dconf list /org/gnome/terminal/legacy/profiles:/
+
+# Read colours from py-wal and build a string
+
+palette=""
+counter=0
+
+while read -r line; do
+	color="'${line}'"
+	if [[ $palette == "" ]]; then
+		palette="[${color}, "
+		background="${color}"
+	elif [[ $counter == 15 ]]; then
+		palette="${palette}${color}]"
+		foreground="${color}"
+	else
+		palette="${palette}$color, "
+	fi
+	counter=$((counter + 1 ))
+done < ~/.cache/wal/colors
+
+# Write colours to the gnome-terminal palette
+
+dconf write /org/gnome/terminal/legacy/profiles:/:c5e9e87a-b946-49cf-88fa-350457f662af/palette "$palette"
+dconf write /org/gnome/terminal/legacy/profiles:/:c5e9e87a-b946-49cf-88fa-350457f662af/foreground-color "$foreground"
+dconf write /org/gnome/terminal/legacy/profiles:/:c5e9e87a-b946-49cf-88fa-350457f662af/background-color "$background"

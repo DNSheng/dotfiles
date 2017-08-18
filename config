@@ -9,6 +9,26 @@
 #
 # Please see http://i3wm.org/docs/userguide.html for a complete reference!
 
+# ===================================
+# Taken keys (+$mod):
+# 	- J		Select right
+# 	- K		Select down
+# 	- L		Select up
+# 	- ;		Select right
+# 	- H		New window right
+# 	- V		New window below
+# 	- F		Fullscreen
+# 	- S		Windows stacked
+# 	- W		Windows tabbed
+# 	- E		Windows toggled (default)
+# 	- D		dmenu
+# 	- M		cmus
+# 	- O		ranger
+# 	- Delete	htop
+# 	- F5		nm-applet
+# 	- F7		caffeine-ng
+# ===================================
+
 set $mod Mod1
 
 # Font for window titles. Will also be used by the bar unless a different font
@@ -31,14 +51,19 @@ font pango:System San Francisco Display Regular 8
 floating_modifier $mod
 
 # start a terminal
-#bindsym $mod+Return exec --no-startup-id i3-sensible-terminal
 bindsym $mod+Return exec --no-startup-id gnome-terminal
 
 # kill focused window
 bindsym $mod+Shift+q kill
 
 # start dmenu (a program launcher)
-bindsym $mod+d exec --no-startup-id dmenu_run
+# Set color# in accordance to ~/.cache/wal/colors.sh
+# Play around with the colors
+#set_from_resource $fg i3wm.color7 #f0f0f0
+set_from_resource $fg i3wm.color0 #f0f0f0
+set_from_resource $bg i3wm.color2 #f0f0f0
+
+bindsym $mod+d exec --no-startup-id dmenu_run -nb "$fg" -nf "$bg" -sb "$bg" -sf "$fg"
 # There also is the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
 # installed.
@@ -70,9 +95,13 @@ bindsym $mod+Shift+Right move right
 
 # split in horizontal orientation
 bindsym $mod+h split h
+# Proposed:
+#bindsym $mod+| split h
 
 # split in vertical orientation
 bindsym $mod+v split v
+# Proposed:
+#bindsym $mod+- split v
 
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
@@ -158,7 +187,8 @@ bindsym $mod+Shift+c reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+bindsym $mod+Shift+e exec i3-msg exit
+#bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
@@ -187,8 +217,8 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 
 # Originally 2f343f for bg-color (active and inactive)
-
-set $bg-color            #0a0a0a
+# Previously 0a0a0a for bg-color (active and inactive)
+set $bg-color            #262626
 set $inactive-bg-color   #0a0a0a
 set $text-color          #f3f4f5
 set $inactive-text-color #676E7D
@@ -226,38 +256,70 @@ bar {
 # Gaps
 
 # Removes borders and title bar from windows
-#for_window [class="^.*"] border pixel 0
+for_window [class="^.*"] border pixel 0
 
 # Adds gaps of pixel size 5
 gaps inner 10
+smart_gaps on
 
 #bindsym $mod+control gaps 
 
 # Binding to lock i3
 bindsym $mod+shift+x exec --no-startup-id i3lock-fancy
 bindsym XF86ScreenSaver exec --no-startup-id i3lock-fancy
-#bindsym XF86ScreenSaver exec --no-startup-id pkill -u tea
 
-# Set background image
-exec_always --no-startup-id feh --bg-scale ~/Pictures/Wallpapers/1475904267982.png
+# Set background image and color theme
+exec_always --no-startup-id wal -i ~/Pictures/Wallpapers/Somber/1502224528790.jpg -tq
+#exec_always --no-startup-id wal -r
 
 # Fade when transitioning between windows and workspaces
 exec --no-startup-id compton -f
 
 # Pulse Audio controls
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 0 +5% #increase sound volume
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 0 -5% #decrease sound volume
-bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute 0 toggle # mute sound
-bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute 1 toggle # mute microphone
+#bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 0 +5% # increase sound volume
+#bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 0 -5% # decrease sound volume
+#bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute 0 toggle # mute sound
+# Dynamic volume control, WIP
+bindsym XF86AudioRaiseVolume exec --no-startup-id ~/.config/i3/scripts/audio increase # increase sound volume
+bindsym XF86AudioLowerVolume exec --no-startup-id ~/.config/i3/scripts/audio decrease # decrease sound volume
+bindsym XF86AudioMute exec --no-startup-id ~/.config/i3/scripts/audio mute 	      # mute sound
+bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute 1 toggle          # mute microphone
 
 # Sreen brightness controls
 bindsym XF86MonBrightnessUp exec --no-startup-id xbacklight -inc 5 # increase screen brightness
 bindsym XF86MonBrightnessDown exec --no-startup-id xbacklight -dec 5 # decrease screen brightness
 
-# Switch between laptop and VGA display
-bindsym XF86Display exec --no-startup-id ~/.config/i3/xrandr/switch
+# Switch between laptop and VGA/HDMI display
+bindsym XF86Display exec --no-startup-id ~/.config/i3/xrandr/new_switch
 
 # Media player (cmus)
 bindsym XF86AudioPlay exec --no-startup-id cmus-remote -u
 bindsym XF86AudioPrev exec --no-startup-id cmus-remote -r
 bindsym XF86AudioNext exec --no-startup-id cmus-remote -n
+
+# Open fcitx for Japanese input
+exec_always --no-startup-id fcitx &
+
+# Open ranger
+bindsym $mod+o exec --no-startup-id gnome-terminal -e ranger
+
+# Open cmus
+bindsym $mod+m exec --no-startup-id gnome-terminal -e cmus
+
+# Open cava
+bindsym $mod+shift+m exec --no-startup-id gnome-terminal -e cava
+
+# Open nm-applet
+bindsym $mod+F5 exec --no-startup-id ~/.config/i3/scripts/network
+
+# Open caffeine
+bindsym $mod+F7 exec --no-startup-id ~/.config/i3/scripts/coffee
+
+# Open htop
+bindsym $mod+Delete exec --no-startup-id gnome-terminal -e htop
+
+# Screenshots
+bindsym XF86WebCam exec --no-startup-id scrot '%Y-%m-%d_$wxWh.png' -e 'mv $f ~/Pictures/Screenshots/'
+
+# Set gnome-terminal palette to wal
+bindsym $mod+F8 exec --no-startup-id ~/.config/i3/scripts/theme
